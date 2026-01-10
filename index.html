@@ -36,7 +36,22 @@
     <h1 style="color:#4f46e5;margin-bottom:5px">🧠 最强大脑·专注记忆训练营</h1>
     <p>3 分钟挑战「过目不忘」，陪孩子一起找宝贝！</p>
     <div class="phrase-grid" id="all-phrases-list"></div>
-    <button class="btn" onclick="_0xStart()">🎯 记好了，开始！</button>
+ <input id="authInput" placeholder="请输入授权码"
+ style="padding:10px;border-radius:10px;border:1px solid #ccc">
+
+<br><br>
+
+<button class="btn" onclick="
+  if(loginWithCode(document.getElementById('authInput').value)){
+    function _0xStart() {
+  requireAuth();   // ← 加这一行
+  document.getElementById('view-welcome').classList.add('hidden');
+  ...
+}
+
+    _0xStart();
+  }
+">🎯 记好了，开始！</button>
     <button class="btn btn-outline" onclick="showEditor()">✏️ 编辑词库</button>
   </div>
 
@@ -74,6 +89,83 @@
     <button class="btn btn-outline" onclick="location.reload()">返回</button>
   </div>
 </div>
+<script>
+/* ===============================
+   授权系统（单设备绑定版）
+   =============================== */
+
+// 你发给家长的授权码（完整输入）
+const VALID_CODES = [
+  "KID-8F29A",
+  "KID-A73QZ",
+  "KID-P92KD"
+];
+
+// 生成设备指纹（稳定、不涉及隐私）
+function getDeviceId() {
+  return btoa(
+    navigator.userAgent +
+    "|" + screen.width +
+    "|" + screen.height +
+    "|" + navigator.language
+  );
+}
+
+// 本地授权记录表
+// 格式：{ 授权码: 设备ID }
+function getAuthMap() {
+  return JSON.parse(localStorage.getItem("AUTH_MAP") || "{}");
+}
+
+function saveAuthMap(map) {
+  localStorage.setItem("AUTH_MAP", JSON.stringify(map));
+}
+
+// 当前是否已授权
+function isAuthed() {
+  const code = localStorage.getItem("AUTH_CODE");
+  if (!code) return false;
+
+  const map = getAuthMap();
+  return map[code] === getDeviceId();
+}
+
+// 登录（家长输入授权码）
+function loginWithCode(inputCode) {
+  const code = inputCode.trim();
+
+  if (!VALID_CODES.includes(code)) {
+    alert("❌ 授权码无效");
+    return false;
+  }
+
+  const map = getAuthMap();
+  const deviceId = getDeviceId();
+
+  // 第一次使用：绑定设备
+  if (!map[code]) {
+    map[code] = deviceId;
+    saveAuthMap(map);
+  }
+
+  // 已被其他设备占用
+  if (map[code] !== deviceId) {
+    alert("⚠️ 此授权码已在另一台设备使用");
+    return false;
+  }
+
+  localStorage.setItem("AUTH_CODE", code);
+  return true;
+}
+
+// 强制校验（游戏开始前调用）
+function requireAuth() {
+  if (!isAuthed()) {
+    alert("请先输入授权码");
+    location.reload();
+  }
+}
+</script>
 
 <script>
 /* 核心屏蔽 */
@@ -193,4 +285,5 @@ function savePhrases() {
 init();
 </script>
 </body>
+
 </html>

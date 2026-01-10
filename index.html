@@ -26,10 +26,14 @@ gap:10px;margin-top:20px}
 <div id="auth">
   <h2>🔐 家长授权</h2>
   <p>请输入授权码</p>
-  <input id="code" placeholder="如：KID-8F29A">
-  <br><br>
-  <button class="btn" onclick="check()">记好了，进入</button>
-  <p id="msg" style="color:red"></p>
+
+  <form id="authForm">
+    <input id="code" placeholder="如：KID-8F29A" autocomplete="off">
+    <br><br>
+    <button class="btn" type="submit">记好了，进入</button>
+  </form>
+
+  <p id="msg" style="color:red;margin-top:10px"></p>
 </div>
 
 <!-- 游戏页 -->
@@ -38,33 +42,42 @@ gap:10px;margin-top:20px}
   <p>想好一个词语，电脑来猜</p>
   <div id="cards" class="grid"></div>
   <br>
-  <button class="btn" onclick="yes()">有</button>
-  <button class="btn" onclick="no()">没有</button>
+  <button class="btn" id="yesBtn">有</button>
+  <button class="btn" id="noBtn">没有</button>
   <p id="step"></p>
 </div>
 
 <script>
-/* ===== 授权 ===== */
+/* ========= 授权逻辑 ========= */
 const LICENSE = "KID-8F29A";
 
-function check(){
-  const v=document.getElementById("code").value.trim().toUpperCase();
-  if(v===LICENSE){
-    localStorage.setItem("ok","1");
+document.getElementById("authForm").addEventListener("submit", function(e){
+  e.preventDefault(); // 关键：防止页面刷新
+
+  const input = document.getElementById("code").value.trim().toUpperCase();
+
+  if(input === LICENSE){
+    alert("✅ 授权成功，进入游戏");
+    localStorage.setItem("LICENSE_OK","1");
     document.getElementById("auth").classList.add("hidden");
     document.getElementById("game").classList.remove("hidden");
-    start();
+    startGame();
   }else{
+    alert("❌ 授权码无效");
     document.getElementById("msg").innerText="❌ 授权码无效";
   }
+});
+
+/* 已授权设备自动进入 */
+if(localStorage.getItem("LICENSE_OK")==="1"){
+  window.addEventListener("load",()=>{
+    document.getElementById("auth").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+    startGame();
+  });
 }
 
-if(localStorage.getItem("ok")==="1"){
-  document.getElementById("auth").classList.add("hidden");
-  document.getElementById("game").classList.remove("hidden");
-}
-
-/* ===== 游戏 ===== */
+/* ========= 游戏逻辑 ========= */
 const data=[
 {id:1,t:"一心一意"},{id:2,t:"二话不说"},{id:3,t:"三心二意"},
 {id:4,t:"四面八方"},{id:5,t:"五颜六色"},{id:6,t:"六神无主"},
@@ -73,27 +86,34 @@ const data=[
 
 let step=0,result=0;
 
-function start(){step=0;result=0;next();}
-
-function next(){
-  document.getElementById("cards").innerHTML="";
-  document.getElementById("step").innerText="第 "+(step+1)+" 步";
-  data.filter(d=>d.id&(1<<step))
-      .forEach(d=>{
-        const div=document.createElement("div");
-        div.className="card";
-        div.innerText=d.t;
-        document.getElementById("cards").appendChild(div);
-      });
+function startGame(){
+  step=0;result=0;
+  nextStep();
 }
 
-function yes(){result|=(1<<step);step++;step<3?next():end();}
-function no(){step++;step<3?next():end();}
+function nextStep(){
+  document.getElementById("cards").innerHTML="";
+  document.getElementById("step").innerText="第 "+(step+1)+" 步";
+  data.filter(d=>d.id & (1<<step)).forEach(d=>{
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerText=d.t;
+    document.getElementById("cards").appendChild(div);
+  });
+}
 
-function end(){
+document.getElementById("yesBtn").onclick=function(){
+  result|=(1<<step);step++;step<3?nextStep():showResult();
+};
+document.getElementById("noBtn").onclick=function(){
+  step++;step<3?nextStep():showResult();
+};
+
+function showResult(){
   const r=data.find(d=>d.id===result);
   document.getElementById("cards").innerHTML=
     "<h2>🎯 你想的是：</h2><h1>"+(r?r.t:"没猜中")+"</h1>";
+  document.getElementById("step").innerText="";
 }
 </script>
 

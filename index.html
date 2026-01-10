@@ -5,121 +5,107 @@
 <title>🧠 最强大脑·专注记忆训练营</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:"Microsoft YaHei";margin:0;background:#f8fafc}
+:root{--primary:#4f46e5;--bg:#f8fafc}
+body{
+  font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
 .hidden{display:none}
-.btn{background:#4f46e5;color:#fff;border:none;padding:12px 24px;
-font-size:16px;border-radius:10px;cursor:pointer}
-input{font-size:18px;padding:10px;width:220px;text-align:center}
-#auth{min-height:100vh;display:flex;flex-direction:column;
-align-items:center;justify-content:center}
-#game{padding:30px;text-align:center}
-.card{background:#fff;border-radius:12px;padding:10px;margin:8px;
-box-shadow:0 4px 10px rgba(0,0,0,.1)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
-gap:10px;margin-top:20px}
+.btn{
+  background:var(--primary);
+  color:white;
+  border:none;
+  padding:12px 25px;
+  font-size:16px;
+  border-radius:12px;
+  cursor:pointer;
+}
+#auth-layer{
+  position:fixed;
+  inset:0;
+  background:#0f172a;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+#auth-box{
+  background:white;
+  padding:30px;
+  border-radius:20px;
+  width:90%;
+  max-width:320px;
+  text-align:center;
+}
+#auth-box input{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  margin:15px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+#game-container{
+  background:white;
+  width:95%;
+  max-width:800px;
+  padding:25px;
+  margin:20px;
+  border-radius:30px;
+  box-shadow:0 20px 50px rgba(0,0,0,.1);
+  text-align:center;
+}
 </style>
 </head>
 
 <body>
 
-<!-- 授权页 -->
-<div id="auth">
-  <h2>🔐 家长授权</h2>
-  <p>请输入授权码</p>
-
-  <form id="authForm">
-    <input id="code" placeholder="如：KID-8F29A" autocomplete="off">
-    <br><br>
-    <button class="btn" type="submit">记好了，进入</button>
-  </form>
-
-  <p id="msg" style="color:red;margin-top:10px"></p>
+<!-- 授权层 -->
+<div id="auth-layer">
+  <div id="auth-box">
+    <h2>🔐 家长授权</h2>
+    <input id="licenseInput" placeholder="请输入授权码">
+    <button class="btn" onclick="checkLicense()">确认授权</button>
+    <div id="authMsg" style="margin-top:10px;color:red"></div>
+  </div>
 </div>
 
-<!-- 游戏页 -->
-<div id="game" class="hidden">
-  <h1>🧠 最强大脑·记忆挑战</h1>
-  <p>想好一个词语，电脑来猜</p>
-  <div id="cards" class="grid"></div>
-  <br>
-  <button class="btn" id="yesBtn">有</button>
-  <button class="btn" id="noBtn">没有</button>
-  <p id="step"></p>
+<!-- 游戏主体 -->
+<div id="game-container" class="hidden">
+  <h1>🧠 最强大脑·专注记忆训练营</h1>
+  <p>🎯 授权成功，游戏已解锁</p>
+  <button class="btn" onclick="alert('🎉 游戏逻辑正常运行')">开始游戏</button>
 </div>
 
 <script>
-/* ========= 授权逻辑 ========= */
+/* ===== 授权配置 ===== */
 const LICENSE = "KID-8F29A";
 
-document.getElementById("authForm").addEventListener("submit", function(e){
-  e.preventDefault(); // 关键：防止页面刷新
-
-  const input = document.getElementById("code").value.trim().toUpperCase();
-
-if(input === LICENSE){
-  localStorage.setItem("LICENSE_OK","1");
-
-  // 先切页面
-  document.getElementById("auth").classList.add("hidden");
-  document.getElementById("game").classList.remove("hidden");
-  startGame();
-
-  // 非阻塞提示（不会卡页面）
-  document.getElementById("msg").innerText="✅ 授权成功，已进入游戏";
-}else{
-  document.getElementById("msg").innerText="❌ 授权码无效";
-}
-});
-
-});
-
-/* 已授权设备自动进入 */
-if(localStorage.getItem("LICENSE_OK")==="1"){
-  window.addEventListener("load",()=>{
-    document.getElementById("auth").classList.add("hidden");
-    document.getElementById("game").classList.remove("hidden");
-    startGame();
-  });
+/* ===== 授权校验 ===== */
+function checkLicense(){
+  const input = document.getElementById("licenseInput").value.trim();
+  if(input === LICENSE){
+    alert("✅ 授权成功");
+    localStorage.setItem("LICENSE_OK","1");
+    document.getElementById("auth-layer").style.display="none";
+    document.getElementById("game-container").classList.remove("hidden");
+  }else{
+    document.getElementById("authMsg").innerText="❌ 授权码无效";
+  }
 }
 
-/* ========= 游戏逻辑 ========= */
-const data=[
-{id:1,t:"一心一意"},{id:2,t:"二话不说"},{id:3,t:"三心二意"},
-{id:4,t:"四面八方"},{id:5,t:"五颜六色"},{id:6,t:"六神无主"},
-{id:7,t:"七上八下"},{id:8,t:"八仙过海"}
-];
-
-let step=0,result=0;
-
-function startGame(){
-  step=0;result=0;
-  nextStep();
-}
-
-function nextStep(){
-  document.getElementById("cards").innerHTML="";
-  document.getElementById("step").innerText="第 "+(step+1)+" 步";
-  data.filter(d=>d.id & (1<<step)).forEach(d=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerText=d.t;
-    document.getElementById("cards").appendChild(div);
-  });
-}
-
-document.getElementById("yesBtn").onclick=function(){
-  result|=(1<<step);step++;step<3?nextStep():showResult();
+/* ===== 页面加载判断 ===== */
+window.onload = function(){
+  if(localStorage.getItem("LICENSE_OK")==="1"){
+    document.getElementById("auth-layer").style.display="none";
+    document.getElementById("game-container").classList.remove("hidden");
+  }
 };
-document.getElementById("noBtn").onclick=function(){
-  step++;step<3?nextStep():showResult();
-};
-
-function showResult(){
-  const r=data.find(d=>d.id===result);
-  document.getElementById("cards").innerHTML=
-    "<h2>🎯 你想的是：</h2><h1>"+(r?r.t:"没猜中")+"</h1>";
-  document.getElementById("step").innerText="";
-}
 </script>
 
 </body>

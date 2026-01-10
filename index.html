@@ -56,16 +56,21 @@ document.getElementById("authForm").addEventListener("submit", function(e){
 
   const input = document.getElementById("code").value.trim().toUpperCase();
 
-  if(input === LICENSE){
-    alert("✅ 授权成功，进入游戏");
-    localStorage.setItem("LICENSE_OK","1");
-    document.getElementById("auth").classList.add("hidden");
-    document.getElementById("game").classList.remove("hidden");
-    startGame();
-  }else{
-    alert("❌ 授权码无效");
-    document.getElementById("msg").innerText="❌ 授权码无效";
-  }
+if(input === LICENSE){
+  localStorage.setItem("LICENSE_OK","1");
+
+  // 先切页面
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  startGame();
+
+  // 非阻塞提示（不会卡页面）
+  document.getElementById("msg").innerText="✅ 授权成功，已进入游戏";
+}else{
+  document.getElementById("msg").innerText="❌ 授权码无效";
+}
+});
+
 });
 
 /* 已授权设备自动进入 */
@@ -119,3 +124,4 @@ function showResult(){
 
 </body>
 </html>
+

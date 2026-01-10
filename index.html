@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>😀</text></svg>">
 <meta charset="UTF-8">
 <title>🧠 最强大脑·专注记忆训练营</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-:root{--primary:#4f46e5;--bg:#f8fafc}
+:root{--primary:#4f46e5;--secondary:#f59e0b;--bg:#f8fafc}
 body{
   font-family:"PingFang SC","Microsoft YaHei",sans-serif;
   background:var(--bg);
   margin:0;
-  min-height:100vh;
   display:flex;
   justify-content:center;
-  align-items:center;
+  min-height:100vh;
 }
 .hidden{display:none}
 .btn{
@@ -21,10 +22,27 @@ body{
   color:white;
   border:none;
   padding:12px 25px;
-  font-size:16px;
+  font-size:1rem;
   border-radius:12px;
   cursor:pointer;
 }
+.btn-outline{
+  background:white;
+  color:var(--primary);
+  border:2px solid var(--primary);
+}
+#game-container{
+  background:white;
+  width:95%;
+  max-width:800px;
+  padding:25px;
+  margin:20px;
+  border-radius:30px;
+  box-shadow:0 20px 50px rgba(0,0,0,.1);
+  text-align:center;
+}
+
+/* 授权层 */
 #auth-layer{
   position:fixed;
   inset:0;
@@ -50,22 +68,32 @@ body{
   border-radius:10px;
   border:1px solid #ccc;
 }
-#game-container{
-  background:white;
-  width:95%;
-  max-width:800px;
-  padding:25px;
-  margin:20px;
-  border-radius:30px;
-  box-shadow:0 20px 50px rgba(0,0,0,.1);
-  text-align:center;
+
+.phrase-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:10px;
+  margin:20px 0;
+  max-height:350px;
+  overflow-y:auto;
+  padding:15px;
+  background:#f1f5f9;
+  border-radius:20px
 }
+.phrase-item{
+  background:white;
+  padding:8px;
+  border-radius:10px;
+  border:1px solid #e2e8f0;
+}
+.en{font-weight:bold;color:var(--primary)}
+.zh{font-size:.8rem;color:#64748b}
 </style>
 </head>
 
 <body>
 
-<!-- 授权层 -->
+<!-- 🔐 授权层 -->
 <div id="auth-layer">
   <div id="auth-box">
     <h2>🔐 家长授权</h2>
@@ -75,22 +103,41 @@ body{
   </div>
 </div>
 
-<!-- 游戏主体 -->
 <div id="game-container" class="hidden">
-  <h1>🧠 最强大脑·专注记忆训练营</h1>
-  <p>🎯 授权成功，游戏已解锁</p>
-  <button class="btn" onclick="alert('🎉 游戏逻辑正常运行')">开始游戏</button>
+
+  <!-- 欢迎页 -->
+  <div id="view-welcome">
+    <h1>🧠 最强大脑·专注记忆训练营</h1>
+    <p>3 分钟挑战「过目不忘」</p>
+    <div class="phrase-grid" id="all-phrases-list"></div>
+    <button class="btn" onclick="_0xStart()">🎯 记好了，开始！</button>
+  </div>
+
+  <!-- 游戏页 -->
+  <div id="view-game" class="hidden">
+    <h2 id="card-title"></h2>
+    <div class="phrase-grid" id="card-phrases"></div>
+    <button class="btn" onclick="_0xChoice(true)">✅ 有的</button>
+    <button class="btn-outline btn" onclick="_0xChoice(false)">❌ 没有</button>
+  </div>
+
+  <!-- 结果页 -->
+  <div id="view-result" class="hidden">
+    <h1>🏆 结果</h1>
+    <div id="result-en" style="font-size:2rem"></div>
+    <div id="result-zh" style="font-size:1.5rem"></div>
+    <button class="btn" onclick="location.reload()">重新开始</button>
+  </div>
+
 </div>
 
 <script>
-/* ===== 授权配置 ===== */
-const LICENSE = "KID-8F29A";
+/* ===== 授权逻辑 ===== */
+const LICENSE="KID-8F29A";
 
-/* ===== 授权校验 ===== */
 function checkLicense(){
-  const input = document.getElementById("licenseInput").value.trim();
-  if(input === LICENSE){
-    alert("✅ 授权成功");
+  const v=document.getElementById("licenseInput").value.trim();
+  if(v===LICENSE){
     localStorage.setItem("LICENSE_OK","1");
     document.getElementById("auth-layer").style.display="none";
     document.getElementById("game-container").classList.remove("hidden");
@@ -99,13 +146,72 @@ function checkLicense(){
   }
 }
 
-/* ===== 页面加载判断 ===== */
-window.onload = function(){
+window.onload=()=>{
   if(localStorage.getItem("LICENSE_OK")==="1"){
     document.getElementById("auth-layer").style.display="none";
     document.getElementById("game-container").classList.remove("hidden");
   }
 };
+
+/* ===== 游戏逻辑 ===== */
+const phrases=[
+{id:1,english:"一心一意",chinese:"一心一意"},
+{id:2,english:"二话不说",chinese:"二话不说"},
+{id:3,english:"三心二意",chinese:"三心二意"},
+{id:4,english:"四面八方",chinese:"四面八方"},
+{id:5,english:"五颜六色",chinese:"五颜六色"},
+{id:6,english:"六神无主",chinese:"六神无主"}
+];
+
+let step=0,answer=0;
+
+function init(){
+  const l=document.getElementById("all-phrases-list");
+  phrases.forEach(p=>{
+    const d=document.createElement("div");
+    d.className="phrase-item";
+    d.innerHTML=`<div class="en">${p.english}</div><div class="zh">${p.chinese}</div>`;
+    l.appendChild(d);
+  });
+}
+
+function _0xStart(){
+  document.getElementById("view-welcome").classList.add("hidden");
+  document.getElementById("view-game").classList.remove("hidden");
+  step=0;answer=0;
+  nextCard();
+}
+
+function nextCard(){
+  const m=1<<step;
+  const list=phrases.filter(p=>(p.id&m)!==0);
+  const box=document.getElementById("card-phrases");
+  box.innerHTML="";
+  list.forEach(p=>{
+    const d=document.createElement("div");
+    d.className="phrase-item";
+    d.innerHTML=`<div class="en">${p.english}</div>`;
+    box.appendChild(d);
+  });
+  document.getElementById("card-title").innerText=`第 ${step+1} 组`;
+}
+
+function _0xChoice(y){
+  if(y)answer+=1<<step;
+  step++;
+  if(step<3)nextCard();
+  else endGame();
+}
+
+function endGame(){
+  document.getElementById("view-game").classList.add("hidden");
+  document.getElementById("view-result").classList.remove("hidden");
+  const r=phrases.find(p=>p.id===answer);
+  document.getElementById("result-en").innerText=r?r.english:"没猜中";
+  document.getElementById("result-zh").innerText=r?r.chinese:"";
+}
+
+init();
 </script>
 
 </body>

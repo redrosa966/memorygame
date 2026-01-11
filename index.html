@@ -6,140 +6,33 @@
 <title>🧠 最强大脑·专注记忆训练营</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-:root{--primary:#4f46e5;--secondary:#f59e0b;--bg:#f8fafc}
-body{
-  font-family:"PingFang SC","Microsoft YaHei",sans-serif;
-  background:var(--bg);
-  margin:0;
-  display:flex;
-  justify-content:center;
-  min-height:100vh;
-  -webkit-user-select:none;
-  user-select:none
-}
-#game-container{
-  background:white;
-  width:95%;
-  max-width:800px;
-  padding:25px;
-  margin:20px;
-  border-radius:30px;
-  box-shadow:0 20px 50px rgba(0,0,0,.1);
-  text-align:center
-}
-.hidden{display:none}
-.btn{
-  background:var(--primary);
-  color:white;
-  border:none;
-  padding:12px 25px;
-  font-size:1rem;
-  border-radius:12px;
-  cursor:pointer;
-  margin:5px;
-  transition:.2s
-}
-.btn:active{transform:scale(.95)}
-.btn-outline{
-  background:white;
-  color:var(--primary);
-  border:2px solid var(--primary)
-}
-.btn-gray{background:#666;color:white}
-.phrase-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
-  gap:10px;
-  margin:20px 0;
-  max-height:350px;
-  overflow-y:auto;
-  padding:15px;
-  background:#f1f5f9;
-  border-radius:20px
-}
-.phrase-item{
-  background:white;
-  padding:8px;
-  border-radius:10px;
-  border:1px solid #e2e8f0;
-  display:flex;
-  flex-direction:column;
-  cursor:pointer;
-  transition:.2s
-}
-.phrase-item:hover{
-  border-color:var(--primary);
-  background:#eef2ff
-}
-.en{font-weight:bold;color:var(--primary);font-size:.95rem}
-.zh{color:#64748b;font-size:.8rem}
-.detective-box{
-  background:#fff1f2;
-  border:2px solid #fda4af;
-  padding:20px;
-  border-radius:20px;
-  margin-top:20px;
-  text-align:left;
-  line-height:1.6
-}
-.correct-tag{color:#059669;font-weight:bold}
-.wrong-tag{color:#dc2626;font-weight:bold}
-.edit-row{
-  display:grid;
-  grid-template-columns:40px 1fr 1fr;
-  gap:10px;
-  margin-bottom:5px;
-  text-align:left
-}
-
-/* 🔐 授权遮罩 */
-#auth-layer{
-  position:fixed;
-  inset:0;
-  background:#0f172a;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:9999
-}
-#auth-box{
-  background:white;
-  padding:30px;
-  border-radius:20px;
-  width:90%;
-  max-width:320px;
-  text-align:center
-}
-#auth-box input{
-  width:100%;
-  padding:12px;
-  font-size:16px;
-  margin:15px 0;
-  border-radius:10px;
-  border:1px solid #ccc
-}
+  :root{--primary:#4f46e5;--secondary:#f59e0b;--bg:#f8fafc}
+  body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);margin:0;display:flex;justify-content:center;min-height:100vh;-webkit-user-select:none;user-select:none}
+  #game-container{background:white;width:95%;max-width:800px;padding:25px;margin:20px;border-radius:30px;box-shadow:0 20px 50px rgba(0,0,0,.1);text-align:center}
+  .phrase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:20px 0;max-height:350px;overflow-y:auto;padding:15px;background:#f1f5f9;border-radius:20px}
+  .phrase-item{background:white;padding:8px;border-radius:10px;border:1px solid #e2e8f0;display:flex;flex-direction:column;cursor:pointer;transition:.2s}
+  .phrase-item:hover{border-color:var(--primary);background:#eef2ff}
+  .phrase-item .en{font-weight:bold;color:var(--primary);font-size:.95rem}
+  .phrase-item .zh{color:#64748b;font-size:.8rem}
+  .btn{background:var(--primary);color:white;border:none;padding:12px 25px;font-size:1rem;border-radius:12px;cursor:pointer;margin:5px;transition:.2s}
+  .btn:active{transform:scale(.95)}
+  .btn-outline{background:white;color:var(--primary);border:2px solid var(--primary)}
+  .btn-gray{background:#666;color:white}
+  .hidden{display:none}
+  #result-box{background:#fff9eb;padding:25px;border-radius:20px;border:3px dashed var(--secondary);margin:15px}
+  #result-en{font-size:3rem;font-weight:900}
+  #result-zh{font-size:1.8rem;color:var(--secondary)}
+  .tip-green{margin-top:8px;font-size:.9rem;color:#059669}
+  .detective-box{background:#fff1f2;border:2px solid #fda4af;padding:20px;border-radius:20px;margin-top:20px;text-align:left;line-height:1.6}
+  .correct-tag{color:#059669;font-weight:bold}
+  .wrong-tag{color:#dc2626;font-weight:bold}
+  .edit-row{display:grid;grid-template-columns:40px 1fr 1fr;gap:10px;margin-bottom:5px;text-align:left}
 </style>
 </head>
-
 <body oncontextmenu="return false;">
-
-<!-- 🔐 授权层（唯一新增，不侵入游戏） -->
-<div id="auth-layer">
-  <div id="auth-box">
-    <h2>🔐 家长授权</h2>
-    <input id="licenseInput" placeholder="输入授权码">
-    <button class="btn" onclick="checkLicense()">确认授权</button>
-    <div id="authMsg" style="margin-top:10px;color:red"></div>
-  </div>
-</div>
-
 <div id="game-container">
-
-  <!-- 欢迎页 -->
   <div id="view-welcome">
-    <div style="text-align:right;margin-bottom:10px">
-      <button class="btn btn-gray" onclick="_exitApp()">❌ 退出关闭</button>
-    </div>
+    <div style="text-align:right;margin-bottom:10px"><button class="btn btn-gray" onclick="_exitApp()">❌ 退出关闭</button></div>
     <h1 style="color:#4f46e5;margin-bottom:5px">🧠 最强大脑·专注记忆训练营</h1>
     <p>3 分钟挑战「过目不忘」，陪孩子一起找宝贝！</p>
     <div class="phrase-grid" id="all-phrases-list"></div>
@@ -147,11 +40,8 @@ body{
     <button class="btn btn-outline" onclick="showEditor()">✏️ 编辑词库</button>
   </div>
 
-  <!-- 游戏页 -->
   <div id="view-game" class="hidden">
-    <div style="text-align:right;margin-bottom:10px">
-      <button class="btn btn-outline" onclick="location.reload()">🏠 退出重玩</button>
-    </div>
+    <div style="text-align:right;margin-bottom:10px"><button class="btn btn-outline" onclick="location.reload()">🏠 退出重玩</button></div>
     <h2 id="card-title" style="color:#f59e0b">第 1 组卡片</h2>
     <p>仔细找一找，这里面有你想的那个宝贝吗？</p>
     <div class="phrase-grid" id="card-phrases"></div>
@@ -159,26 +49,17 @@ body{
     <button class="btn btn-outline" onclick="_0xChoice(false)">❌ 没有</button>
   </div>
 
-  <!-- 结果页 -->
   <div id="view-result" class="hidden">
-    <div style="text-align:right;margin-bottom:10px">
-      <button class="btn btn-outline" onclick="location.reload()">🏠 退出重玩</button>
-    </div>
+    <div style="text-align:right;margin-bottom:10px"><button class="btn btn-outline" onclick="location.reload()">🏠 退出重玩</button></div>
     <h1 id="result-title">🏆 挑战成功！</h1>
-    <div id="result-box" style="background:#fff9eb;padding:25px;border-radius:20px;border:3px dashed var(--secondary);margin:15px">
-      <div id="result-en" style="font-size:3rem;font-weight:900"></div>
-      <div id="result-zh" style="font-size:1.8rem;color:var(--secondary)"></div>
-    </div>
+    <div id="result-box"><div id="result-en"></div><div id="result-zh"></div></div>
     <p>是这个宝贝吗？</p>
     <button class="btn" style="background:#059669" onclick="location.reload()">🎉 如果是，祝贺全找对了</button>
     <button class="btn" style="background:#dc2626" onclick="showCorrection()">❌ 不是，帮我查下错在哪？</button>
   </div>
 
-  <!-- 纠错页 -->
   <div id="view-correction" class="hidden">
-    <div style="text-align:right;margin-bottom:10px">
-      <button class="btn btn-outline" onclick="location.reload()">🏠 退出重玩</button>
-    </div>
+    <div style="text-align:right;margin-bottom:10px"><button class="btn btn-outline" onclick="location.reload()">🏠 退出重玩</button></div>
     <h2>🧐 魔法侦探在调查...</h2>
     <p>请告诉电脑，你刚才心里想的是哪一个宝贝？</p>
     <div class="phrase-grid" id="correction-list"></div>
@@ -186,181 +67,131 @@ body{
     <button class="btn" onclick="location.reload()" style="margin-top:20px">重新开始练习</button>
   </div>
 
-  <!-- 编辑器 -->
   <div id="view-editor" class="hidden">
     <h2>✏️ 词库编辑器（家长模式）</h2>
     <div id="editor-list" style="max-height:400px;overflow-y:auto;margin-bottom:15px;"></div>
     <button class="btn" onclick="savePhrases()">💾 保存</button>
     <button class="btn btn-outline" onclick="location.reload()">返回</button>
   </div>
-
 </div>
 
 <script>
-/* ================= 授权逻辑（只此一处） ================= */
-const LICENSE="KID-8F29A";
+/* 核心屏蔽 */
+document.onkeydown = (e) => { if (e.keyCode === 123 || (e.ctrlKey && e.keyCode === 85) || (e.ctrlKey && e.shiftKey && e.keyCode === 73)) return false; };
 
-function checkLicense(){
-  const v=document.getElementById("licenseInput").value.trim();
-  if(v===LICENSE){
-    localStorage.setItem("LICENSE_OK","1");
-    document.getElementById("auth-layer").style.display="none";
-  }else{
-    document.getElementById("authMsg").innerText="❌ 授权码无效";
-  }
-}
-
-if(localStorage.getItem("LICENSE_OK")==="1"){
-  document.getElementById("auth-layer").style.display="none";
-}
-
-/* ================= 以下为原始游戏逻辑（PART 2 继续） ================= */
-/* ========== 原始数据区 ========== */
-let phrases = JSON.parse(localStorage.getItem("PHRASES")) || [
-  {en:"apple",zh:"苹果"},
-  {en:"banana",zh:"香蕉"},
-  {en:"orange",zh:"橙子"},
-  {en:"pear",zh:"梨"},
-  {en:"peach",zh:"桃子"},
-  {en:"grape",zh:"葡萄"}
+const defaultPhrases = [
+  {id:1,english:"一心一意",chinese:"一心一意"},{id:2,english:"二话不说",chinese:"二话不说"},{id:3,english:"三心二意",chinese:"三心二意"},{id:4,english:"四面八方",chinese:"四面八方"},{id:5,english:"五颜六色",chinese:"五颜六色"},{id:6,english:"六神无主",chinese:"六神无主"},{id:7,english:"七上八下",chinese:"七上八下"},{id:8,english:"八仙过海",chinese:"八仙过海"},{id:9,english:"九牛一毛",chinese:"九牛一毛"},{id:10,english:"十全十美",chinese:"十全十美"},{id:11,english:"画蛇添足",chinese:"画蛇添足"},{id:12,english:"守株待兔",chinese:"守株待兔"},{id:13,english:"亡羊补牢",chinese:"亡羊补牢"},{id:14,english:"井底之蛙",chinese:"井底之蛙"},{id:15,english:"狐假虎威",chinese:"狐假虎威"},{id:16,english:"龟兔赛跑",chinese:"龟兔赛跑"},{id:17,english:"拔苗助长",chinese:"拔苗助长"},{id:18,english:"盲人摸象",chinese:"盲人摸象"},{id:19,english:"胸有成竹",chinese:"胸有成竹"},{id:20,english:"一箭双雕",chinese:"一箭双雕"},{id:21,english:"风和日丽",chinese:"风和日丽"},{id:22,english:"鸟语花香",chinese:"鸟语花香"},{id:23,english:"春暖花开",chinese:"春暖花开"},{id:24,english:"秋高气爽",chinese:"秋高气爽"},{id:25,english:"白雪皑皑",chinese:"白雪皑皑"},{id:26,english:"电闪雷鸣",chinese:"电闪雷鸣"},{id:27,english:"繁星点点",chinese:"繁星点点"},{id:28,english:"蓝天白云",chinese:"蓝天白云"},{id:29,english:"青山绿水",chinese:"青山绿水"},{id:30,english:"落英缤纷",chinese:"落英缤纷"},{id:31,english:"津津有味",chinese:"津津有味"},{id:32,english:"哈哈大笑",chinese:"哈哈大笑"},{id:33,english:"手舞足蹈",chinese:"手舞足蹈"},{id:34,english:"自言自语",chinese:"自言自语"},{id:35,english:"东张西望",chinese:"东张西望"},{id:36,english:"前仰后合",chinese:"前仰后合"},{id:37,english:"又蹦又跳",chinese:"又蹦又跳"},{id:38,english:"摇头晃脑",chinese:"摇头晃脑"},{id:39,english:"眉开眼笑",chinese:"眉开眼笑"},{id:40,english:"愁眉苦脸",chinese:"愁眉苦脸"},{id:41,english:"苹果红红",chinese:"苹果红红"},{id:42,english:"香蕉弯弯",chinese:"香蕉弯弯"},{id:43,english:"葡萄串串",chinese:"葡萄串串"},{id:44,english:"西瓜圆圆",chinese:"西瓜圆圆"},{id:45,english:"牛奶香香",chinese:"牛奶香香"},{id:46,english:"面包软软",chinese:"面包软软"},{id:47,english:"糖果甜甜",chinese:"糖果甜甜"},{id:48,english:"饼干脆脆",chinese:"饼干脆脆"},{id:49,english:"冰淇淋凉",chinese:"冰淇淋凉"},{id:50,english:"可乐泡泡",chinese:"可乐泡泡"},{id:51,english:"小小脑袋",chinese:"小小脑袋"},{id:52,english:"大大眼睛",chinese:"大大眼睛"},{id:53,english:"长长头发",chinese:"长长头发"},{id:54,english:"白白牙齿",chinese:"白白牙齿"},{id:55,english:"红红嘴巴",chinese:"红红嘴巴"},{id:56,english:"软软耳朵",chinese:"软软耳朵"},{id:57,english:"胖胖小手",chinese:"胖胖小手"},{id:58,english:"厚厚书本",chinese:"厚厚书本"},{id:59,english:"五彩铅笔",chinese:"五彩铅笔"},{id:60,english:"圆圆皮球",chinese:"圆圆皮球"},{id:61,english:"天天开心",chinese:"天天开心"},{id:62,english:"生日快乐",chinese:"生日快乐"},{id:63,english:"学习进步",chinese:"学习进步"}
 ];
 
-/* ========== 状态变量 ========== */
-let targetIndex = Math.floor(Math.random()*phrases.length);
-let target = phrases[targetIndex];
-let round = 0;
-let history = [];
-let currentGroup = [];
+let phrases = JSON.parse(localStorage.getItem('focusMemoryPhrases')) || defaultPhrases;
+let _0xP1 = 0, _0xP2 = [], _0xP3 = 0;
 
-/* ========== 工具函数 ========== */
-function shuffle(arr){
-  return [...arr].sort(()=>Math.random()-0.5);
-}
-function show(id){
-  ["view-welcome","view-game","view-result","view-correction","view-editor"]
-    .forEach(v=>document.getElementById(v).classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
+function init() {
+  const l = document.getElementById('all-phrases-list');
+  phrases.forEach(p => l.appendChild(createItem(p)));
 }
 
-/* ========== 首页渲染 ========== */
-function renderAll(){
-  const box=document.getElementById("all-phrases-list");
-  box.innerHTML="";
-  phrases.forEach(p=>{
-    const d=document.createElement("div");
-    d.className="phrase-item";
-    d.innerHTML=`<div class="en">${p.en}</div><div class="zh">${p.zh}</div>`;
-    box.appendChild(d);
-  });
-}
-renderAll();
-
-/* ========== 游戏启动 ========== */
-function _0xStart(){
-  round=0;
-  history=[];
-  show("view-game");
-  nextRound();
+function createItem(p, fn) {
+  const d = document.createElement('div');
+  d.className = 'phrase-item';
+  d.innerHTML = `<span class="en">${p.english}</span><span class="zh">${p.chinese}</span>`;
+  if (fn) d.onclick = () => fn(p);
+  return d;
 }
 
-function nextRound(){
-  round++;
-  document.getElementById("card-title").innerText=`第 ${round} 组卡片`;
-  currentGroup = shuffle(phrases).slice(0,Math.min(3+round,phrases.length));
-  const box=document.getElementById("card-phrases");
-  box.innerHTML="";
-  currentGroup.forEach(p=>{
-    const d=document.createElement("div");
-    d.className="phrase-item";
-    d.innerHTML=`<div class="en">${p.en}</div><div class="zh">${p.zh}</div>`;
-    box.appendChild(d);
-  });
+function _0xStart() {
+  document.getElementById('view-welcome').classList.add('hidden');
+  document.getElementById('view-game').classList.remove('hidden');
+  _0xP1 = 0; _0xP2 = []; _0xP3 = 0; _0xNext();
 }
 
-function _0xChoice(ans){
-  const has=currentGroup.some(p=>p.en===target.en);
-  history.push({group:[...currentGroup],ans,has});
-  if(ans===has){
-    if(round>=6){
-      showResult();
-    }else{
-      nextRound();
-    }
-  }else{
-    showResult(false);
+/* 核心：打乱顺序（洗牌算法） */
+function _0xShuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function _0xNext() {
+  const m = 1 << _0xP1;
+  let c = phrases.filter(p => (p.id & m) !== 0);
+  // 关键：每次显示前打乱顺序，位置不再固定
+  c = _0xShuffle(c);
+  document.getElementById('card-title').innerText = `第 ${_0xP1 + 1} 组卡片`;
+  const b = document.getElementById('card-phrases');
+  b.innerHTML = '';
+  c.forEach(p => b.appendChild(createItem(p)));
+}
+
+function _0xChoice(y) {
+  _0xP2.push(y);
+  if (y) _0xP3 += 1 << _0xP1;
+  _0xP1++;
+  if (_0xP1 < 6) _0xNext(); else _0xEnd();
+}
+
+function _0xEnd() {
+  document.getElementById('view-game').classList.add('hidden');
+  document.getElementById('view-result').classList.remove('hidden');
+  const r = phrases.find(p => p.id === _0xP3);
+  document.getElementById('result-en').innerText = r ? r.english : "没猜中...";
+  document.getElementById('result-zh').innerText = r ? r.chinese : "是不是记错卡片啦？";
+}
+
+function _exitApp() {
+  if (typeof WeixinJSBridge !== "undefined") {
+    WeixinJSBridge.call('closeWindow');
+  } else {
+    window.close();
+    setTimeout(() => {
+      document.getElementById('game-container').innerHTML = `<div style="padding:40px;"><h2>🧠 训练营已关闭</h2><p>请手动关闭此页面。</p><button class="btn" onclick="location.reload()">重新进入</button></div>`;
+    }, 100);
   }
 }
 
-/* ========== 结果页 ========== */
-function showResult(success=true){
-  show("view-result");
-  document.getElementById("result-title").innerText=
-    success?"🏆 挑战成功！":"❌ 出现判断错误";
-  document.getElementById("result-en").innerText=target.en;
-  document.getElementById("result-zh").innerText=target.zh;
+function showCorrection() {
+  document.getElementById('view-result').classList.add('hidden');
+  document.getElementById('view-correction').classList.remove('hidden');
+  const l = document.getElementById('correction-list');
+  l.innerHTML = '';
+  phrases.forEach(p => l.appendChild(createItem(p, (t) => {
+    const b = document.getElementById('analysis-result');
+    b.classList.remove('hidden');
+    let h = `<b>🔍 侦探调查报告：</b>你想的是：<span class="correct-tag">${t.english}</span><br><br>`;
+    let err = [];
+    for(let i=0; i<6; i++) {
+      if(((t.id & (1<<i))!==0) !== _0xP2[i]) err.push(`第 ${i+1} 张卡片` + (_0xRec[i]?"多选了":"漏选了"));
+    }
+    b.innerHTML = h + (err.length? `发现错误：<br>${err.join('<br>')}` : "每一步都选对了，再核对下结果？");
+  })));
 }
 
-/* ========== 纠错侦探 ========== */
-function showCorrection(){
-  show("view-correction");
-  const box=document.getElementById("correction-list");
-  box.innerHTML="";
-  phrases.forEach(p=>{
-    const d=document.createElement("div");
-    d.className="phrase-item";
-    d.innerHTML=`<div class="en">${p.en}</div><div class="zh">${p.zh}</div>`;
-    d.onclick=()=>analyze(p);
-    box.appendChild(d);
+function showEditor() {
+  document.getElementById('view-welcome').classList.add('hidden');
+  document.getElementById('view-editor').classList.remove('hidden');
+  const el = document.getElementById('editor-list');
+  el.innerHTML = '';
+  phrases.forEach((p, i) => {
+    const r = document.createElement('div');
+    r.className = 'edit-row';
+    r.innerHTML = `<span>${p.id}</span><input id="en-${i}" value="${p.english}"><input id="zh-${i}" value="${p.chinese}">`;
+    el.appendChild(r);
   });
 }
 
-function analyze(real){
-  const out=document.getElementById("analysis-result");
-  out.classList.remove("hidden");
-  let html=`<b>🎯 真实目标：</b> ${real.en}<br><br>`;
-  history.forEach((h,i)=>{
-    const should=h.group.some(p=>p.en===real.en);
-    const ok=(should===h.ans);
-    html+=`第 ${i+1} 轮： ${ok?"<span class='correct-tag'>正确</span>":"<span class='wrong-tag'>错误</span>"}<br>`;
+function savePhrases() {
+  phrases.forEach((p, i) => {
+    p.english = document.getElementById(`en-${i}`).value.trim();
+    p.chinese = document.getElementById(`zh-${i}`).value.trim();
   });
-  out.innerHTML=html;
-}
-
-/* ========== 编辑器 ========== */
-function showEditor(){
-  show("view-editor");
-  const box=document.getElementById("editor-list");
-  box.innerHTML="";
-  phrases.forEach((p,i)=>{
-    const row=document.createElement("div");
-    row.className="edit-row";
-    row.innerHTML=`
-      <span>${i+1}</span>
-      <input value="${p.en}">
-      <input value="${p.zh}">
-    `;
-    box.appendChild(row);
-  });
-}
-
-function savePhrases(){
-  const rows=[...document.querySelectorAll(".edit-row")];
-  phrases=rows.map(r=>{
-    const ins=r.querySelectorAll("input");
-    return {en:ins[0].value.trim(),zh:ins[1].value.trim()};
-  }).filter(p=>p.en&&p.zh);
-  localStorage.setItem("PHRASES",JSON.stringify(phrases));
-  alert("✅ 已保存词库");
+  localStorage.setItem('focusMemoryPhrases', JSON.stringify(phrases));
   location.reload();
 }
 
-/* ========== 退出 ========== */
-function _exitApp(){
-  alert("已退出，可直接关闭页面");
-}
+init();
 </script>
-
 </body>
 </html>
-
 
